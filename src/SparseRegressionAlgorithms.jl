@@ -1,5 +1,6 @@
 module SparseRegressionAlgorithms
 
-# package code goes here
+include("sweep.jl")
+include("fista.jl")
 
-end # module
+end
