@@ -1,5 +1,11 @@
+#-----------------------------------------------------------------------# sweepmatrix
+"""
+`sweepmatrix(x, y, addint = true)`
 
+`sweepmatrix(x, y, wts, addint = true)`
 
+Create the matrix [x y]' * [x y] for sweeping, optionally with weights
+"""
 function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
     n, p = size(x)
     d = p + 1 + addint
@@ -15,6 +21,36 @@ function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
         #operations: 1'x, 1'y,
         A[1, 2:end - 1] = mean(x, 1)
         A[1, end] = mean(y)
+    end
+    A
+end
+function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, wts::AVec{T}, addint::Bool = true)
+    n, p = size(x)
+    d = p + 1 + addint
+    A = zeros(d, d)
+    W = Diagonal(sqrt(wts))
+    Wx = W * x
+    Wy = W * y
+
+    rng = (1:p) + addint
+    # operations: x'Wx, x'Wy, y'Wy
+    BLAS.syrk!('U', 'T', 1 / n, Wx, 0.0, view(A, rng, rng))
+    BLAS.gemv!('T', 1 / n, Wx, Wy, 0.0, view(A, rng, d))
+    A[end, end] = dot(y, Wy) / n
+
+    if addint
+        #operations: 1'Wx, 1'Wy,
+        A[1, 2:end - 1] = mean(Wx, 1)
+        A[1, end] = mean(y, StatsBase.WeightVec(wts))
+    end
+    A
+end
+
+"Add a ridge penalty to the sweepmatrix"
+function addridge!{T <: Number}(A::AMat{T}, λ::T, intercept::Bool)
+    rng = (1 + intercept):(size(A, 1) - 1)
+    for i in rng
+        A[i, i] *= λ
     end
     A
 end

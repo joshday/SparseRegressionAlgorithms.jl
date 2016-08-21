@@ -1,6 +1,12 @@
 module SparseRegressionAlgorithms
 
+import SweepOperator
+import StatsBase
+
+typealias AVec{T} AbstractVector{T}
+typealias AMat{T} AbstractMatrix{T}
+
 include("sweep.jl")
-include("fista.jl")
+include("proxgrad.jl")
 
 end
