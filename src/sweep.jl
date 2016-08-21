@@ -18,7 +18,8 @@ function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
     A[end, end] = dot(y, y) / n
 
     if addint
-        #operations: 1'x, 1'y,
+        #operations: 1'1, 1'x, 1'y,
+        A[1, 1] = 1.0
         A[1, 2:end - 1] = mean(x, 1)
         A[1, end] = mean(y)
     end
@@ -27,6 +28,7 @@ end
 function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, wts::AVec{T}, addint::Bool = true)
     n, p = size(x)
     d = p + 1 + addint
+    wts = wts / sum(wts)
     A = zeros(d, d)
     W = Diagonal(sqrt(wts))
     Wx = W * x
@@ -53,4 +55,18 @@ function addridge!{T <: Number}(A::AMat{T}, λ::T, intercept::Bool)
         A[i, i] *= λ
     end
     A
+end
+
+
+#--------# regression
+function sweepreg{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true; λ::T = zero(T))
+    A = sweepmatrix(x, y, addint)
+    if λ > zero(T)
+        addridge!(A, λ, addint)
+    end
+    SweepOperator.sweep!(A, 1:size(A, 1) - 1)
+    β = A[1:end-1, end]
+    SSE = A[end, end]
+    minusXTXinv = A[1:end-1, 1:end-1]
+    β, SSE, A
 end
