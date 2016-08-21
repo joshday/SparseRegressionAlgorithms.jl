@@ -68,5 +68,5 @@ function sweepreg{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true; λ::
     β = A[1:end-1, end]
     SSE = A[end, end]
     minusXTXinv = A[1:end-1, 1:end-1]
-    β, SSE, A
+    β, SSE, minusXTXinv
 end
