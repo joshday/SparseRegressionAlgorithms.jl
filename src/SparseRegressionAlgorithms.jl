@@ -7,6 +7,4 @@ typealias AVec{T} AbstractVector{T}
 typealias AMat{T} AbstractMatrix{T}
 
 include("sweep.jl")
-include("proxgrad.jl")
-
 end

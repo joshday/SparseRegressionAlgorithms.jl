@@ -6,7 +6,7 @@
 
 Create the matrix [x y]' * [x y] for sweeping, optionally with weights
 """
-function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
+function sweepmatrix{T <: LinAlg.BlasFloat}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
     n, p = size(x)
     d = p + 1 + addint
     A = zeros(d, d)
@@ -25,7 +25,7 @@ function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true)
     end
     A
 end
-function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, wts::AVec{T}, addint::Bool = true)
+function sweepmatrix{T <: LinAlg.BlasFloat}(x::AMat{T}, y::AVec{T}, wts::AVec{T}, addint::Bool = true)
     n, p = size(x)
     d = p + 1 + addint
     wts = wts / sum(wts)
@@ -49,7 +49,7 @@ function sweepmatrix{T <: Number}(x::AMat{T}, y::AVec{T}, wts::AVec{T}, addint::
 end
 
 "Add a ridge penalty to the sweepmatrix"
-function addridge!{T <: Number}(A::AMat{T}, λ::T, intercept::Bool)
+function addridge!{T <: LinAlg.BlasFloat}(A::AMat{T}, λ::T, intercept::Bool)
     rng = (1 + intercept):(size(A, 1) - 1)
     for i in rng
         A[i, i] *= λ
@@ -58,8 +58,8 @@ function addridge!{T <: Number}(A::AMat{T}, λ::T, intercept::Bool)
 end
 
 
-#--------# regression
-function sweepreg{T <: Number}(x::AMat{T}, y::AVec{T}, addint::Bool = true; λ::T = zero(T))
+# Unpenalized or Ridge-regularized regression
+function sweepreg{T <: LinAlg.BlasFloat}(x::AMat{T}, y::AVec{T}, addint::Bool = true; λ::T = zero(T))
     A = sweepmatrix(x, y, addint)
     if λ > zero(T)
         addridge!(A, λ, addint)
